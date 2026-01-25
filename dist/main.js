@@ -1,4 +1,6 @@
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, parse, relative, resolve } from "node:path";
+import {} from "vite";
 export function virtualHTML(pluginConfig) {
     const name = "vite-plugin-virtual-html";
     // --- DEV & BUILD MODE ---
@@ -74,6 +76,7 @@ export function virtualHTML(pluginConfig) {
                         module,
                     });
                     if (html) {
+                        // TODO: optimize cache and memory usage when handling large input array
                         resolvedHTMLs.set(entryId, html);
                     }
                 }
@@ -85,6 +88,33 @@ export function virtualHTML(pluginConfig) {
             }
             finally {
                 await server.close();
+            }
+        },
+        // --- BUILD MODE ---
+        async writeBundle(options) {
+            if (viteCommand !== "build") {
+                return;
+            }
+            // skip if no transform function is provided
+            if (!pluginConfig.onTransformHTML) {
+                return;
+            }
+            const input = viteResolvedConfig.build.rollupOptions.input;
+            if (!Array.isArray(input)) {
+                // something wrong ?
+                this.error("invalid input configuration");
+            }
+            // TODO: optimize loop when handling large input array
+            for (const id of input) {
+                const outputPath = join(viteResolvedConfig.root, viteResolvedConfig.build.outDir, id);
+                if (!existsSync(outputPath)) {
+                    this.warn(`output file ${outputPath} does not exist`);
+                    continue;
+                }
+                let html = readFileSync(outputPath, "utf8");
+                // apply user-defined transform
+                html = await pluginConfig.onTransformHTML(html);
+                writeFileSync(outputPath, html, "utf8");
             }
         },
         // --- BUILD MODE ---
@@ -127,8 +157,9 @@ export function virtualHTML(pluginConfig) {
                     return next();
                 }
                 try {
+                    // on-demand
                     const module = await server.ssrLoadModule(entryPath);
-                    const html = await pluginConfig.onGetHTML({
+                    let html = await pluginConfig.onGetHTML({
                         module,
                     });
                     if (!html) {
@@ -136,10 +167,14 @@ export function virtualHTML(pluginConfig) {
                         return next();
                     }
                     // apply vite internal ssr transform
-                    const transformedHtml = await server.transformIndexHtml(req.url, html);
+                    html = await server.transformIndexHtml(req.url, html);
+                    // apply user-defined transform
+                    if (pluginConfig.onTransformHTML) {
+                        html = await pluginConfig.onTransformHTML(html);
+                    }
                     res.statusCode = 200;
                     res.setHeader("content-type", "text/html; charset=utf-8");
-                    res.end(transformedHtml);
+                    res.end(html);
                     return;
                 }
                 catch (e) {

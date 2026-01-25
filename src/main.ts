@@ -1,5 +1,6 @@
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, parse, relative, resolve } from "node:path";
-import type { Plugin, ResolvedConfig, UserConfig } from "vite";
+import { type Plugin, type ResolvedConfig, type UserConfig } from "vite";
 
 type MaybePromise<T> = T | Promise<T>;
 type Nullable<T> = T | null | undefined | void;
@@ -10,11 +11,14 @@ export type OnGetHTMLArgs = {
 };
 
 export type VirtualHTMLPluginConfig = {
-  /** @description A function that returns a record of virtual HTML entries. example: { "home": "src/pages/home.jsx" } then "dist/home.html" */
+  /** @description A function that returns a record of virtual HTML entries. example: { "home.html": "src/pages/home.jsx" } then "dist/home.html" */
   onGetEntries(): Record<string, string>;
 
   /** @description A function that returns the HTML content of the virtual HTML entry. you can use your own JSX runtime or any other library to generate the HTML content. */
   onGetHTML(args: OnGetHTMLArgs): MaybePromise<Nullable<string>>;
+
+  /** @description A function that post-processes the HTML content of the virtual HTML entry. */
+  onTransformHTML?(html: string): MaybePromise<string>;
 };
 
 export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
@@ -117,6 +121,7 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
           });
 
           if (html) {
+            // TODO: optimize cache and memory usage when handling large input array
             resolvedHTMLs.set(entryId, html);
           }
         }
@@ -126,6 +131,42 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
         }
       } finally {
         await server.close();
+      }
+    },
+
+    // --- BUILD MODE ---
+    async writeBundle(options) {
+      if (viteCommand !== "build") {
+        return;
+      }
+
+      // skip if no transform function is provided
+      if (!pluginConfig.onTransformHTML) {
+        return;
+      }
+
+      const input = viteResolvedConfig.build.rollupOptions.input;
+
+      if (!Array.isArray(input)) {
+        // something wrong ?
+        this.error("invalid input configuration");
+      }
+
+      // TODO: optimize loop when handling large input array
+      for (const id of input) {
+        const outputPath = join(viteResolvedConfig.root, viteResolvedConfig.build.outDir, id);
+
+        if (!existsSync(outputPath)) {
+          this.warn(`output file ${outputPath} does not exist`);
+          continue;
+        }
+
+        let html = readFileSync(outputPath, "utf8");
+
+        // apply user-defined transform
+        html = await pluginConfig.onTransformHTML(html);
+
+        writeFileSync(outputPath, html, "utf8");
       }
     },
 
@@ -183,8 +224,10 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
         }
 
         try {
+          // on-demand
           const module = await server.ssrLoadModule(entryPath);
-          const html = await pluginConfig.onGetHTML({
+
+          let html = await pluginConfig.onGetHTML({
             module,
           });
 
@@ -194,11 +237,16 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
           }
 
           // apply vite internal ssr transform
-          const transformedHtml = await server.transformIndexHtml(req.url, html);
+          html = await server.transformIndexHtml(req.url, html);
+
+          // apply user-defined transform
+          if (pluginConfig.onTransformHTML) {
+            html = await pluginConfig.onTransformHTML(html);
+          }
 
           res.statusCode = 200;
           res.setHeader("content-type", "text/html; charset=utf-8");
-          res.end(transformedHtml);
+          res.end(html);
           return;
         }
 
