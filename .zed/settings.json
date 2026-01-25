@@ -1,0 +1,19 @@
+// Folder-specific settings
+//
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
+{
+  "format_on_save": "off",
+  "languages": {
+    "TypeScript": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+      "tab_size": 2,
+    },
+    "TSX": {
+      "formatter": "language_server",
+      "format_on_save": "on",
+      "tab_size": 2,
+    },
+  },
+}
