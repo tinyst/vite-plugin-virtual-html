@@ -1,0 +1,27 @@
+{
+  "name": "@tinyst/vite-plugin-virtual-html",
+  "author": "Wirune Kaewjai",
+  "version": "0.0.1",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/main.js",
+      "types": "./dist/main.d.ts"
+    }
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "husky": "^8.0.0"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "prepare": "husky install"
+  }
+}

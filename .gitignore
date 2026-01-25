@@ -1,0 +1,9 @@
+# directory
+.cache/
+.idea/
+.temp/
+__MACOSX/
+node_modules/
+
+# file
+.DS_Store
