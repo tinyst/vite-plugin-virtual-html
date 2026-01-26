@@ -12,7 +12,7 @@ export type OnGetHTMLArgs = {
 
 export type VirtualHTMLPluginConfig = {
   /** @description A function that returns a record of virtual HTML entries. example: { "home.html": "src/pages/home.jsx" } then "dist/home.html" */
-  onGetEntries(): Record<string, string>;
+  onGetEntries(): MaybePromise<Record<string, string>>;
 
   /** @description A function that returns the HTML content of the virtual HTML entry. you can use your own JSX runtime or any other library to generate the HTML content. */
   onGetHTML(args: OnGetHTMLArgs): MaybePromise<Nullable<string>>;
@@ -37,7 +37,7 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
     name,
 
     // --- BUILD MODE ---
-    config(config, { command }) {
+    async config(config, { command }) {
       if (command !== "build") {
         return;
       }
@@ -45,7 +45,7 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
       viteCommand = command;
       viteUserConfig = config;
 
-      const entries = pluginConfig.onGetEntries();
+      const entries = await pluginConfig.onGetEntries();
 
       // generate virtual HTML entries
       const input = Object.keys(entries).map((entry) => {
@@ -106,7 +106,7 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
 
       try {
         const cwd = viteResolvedConfig.root;
-        const entries = pluginConfig.onGetEntries();
+        const entries = await pluginConfig.onGetEntries();
 
         for (const [key, value] of Object.entries(entries)) {
           const { dir, name } = parse(key);
@@ -190,10 +190,10 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
     },
 
     // --- DEV MODE ---
-    configureServer(server) {
+    async configureServer(server) {
       const cwd = viteResolvedConfig.root;
 
-      const entries = pluginConfig.onGetEntries();
+      const entries = await pluginConfig.onGetEntries();
       const entryMap = new Map<string, string>();
 
       for (const [key, value] of Object.entries(entries)) {

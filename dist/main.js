@@ -12,13 +12,13 @@ export function virtualHTML(pluginConfig) {
     return {
         name,
         // --- BUILD MODE ---
-        config(config, { command }) {
+        async config(config, { command }) {
             if (command !== "build") {
                 return;
             }
             viteCommand = command;
             viteUserConfig = config;
-            const entries = pluginConfig.onGetEntries();
+            const entries = await pluginConfig.onGetEntries();
             // generate virtual HTML entries
             const input = Object.keys(entries).map((entry) => {
                 const { dir, name } = parse(entry);
@@ -65,7 +65,7 @@ export function virtualHTML(pluginConfig) {
             resolvedHTMLs.clear();
             try {
                 const cwd = viteResolvedConfig.root;
-                const entries = pluginConfig.onGetEntries();
+                const entries = await pluginConfig.onGetEntries();
                 for (const [key, value] of Object.entries(entries)) {
                     const { dir, name } = parse(key);
                     const entryId = relative(cwd, resolve(join(cwd, dir, name + ".html")));
@@ -133,9 +133,9 @@ export function virtualHTML(pluginConfig) {
             }
         },
         // --- DEV MODE ---
-        configureServer(server) {
+        async configureServer(server) {
             const cwd = viteResolvedConfig.root;
-            const entries = pluginConfig.onGetEntries();
+            const entries = await pluginConfig.onGetEntries();
             const entryMap = new Map();
             for (const [key, value] of Object.entries(entries)) {
                 const { dir, name } = parse(key);
