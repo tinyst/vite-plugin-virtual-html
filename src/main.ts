@@ -75,12 +75,12 @@ export function virtualHTML(pluginConfig: VirtualHTMLPluginConfig): Plugin {
         return;
       }
 
-      const { createServer } = await import('vite');
+      const { createServer } = await import("vite");
       const server = await createServer({
         ...viteUserConfig,
 
-        // prevent vite from loading vite.config.ts again
-        configFile: false,
+        // // prevent vite from loading vite.config.ts again
+        // configFile: false,
 
         plugins: viteUserConfig?.plugins?.filter((plugin) => {
           // prevent plugin from loading itself again
