@@ -2,6 +2,8 @@
   "compilerOptions": {
     "alwaysStrict": true,
     "declaration": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@tinyst/jsx",
     "lib": ["ES2022"],
     "module": "Preserve",
     "moduleDetection": "force",
@@ -18,5 +20,5 @@
     "target": "ESNext",
     "verbatimModuleSyntax": true,
   },
-  "include": ["src"],
+  "include": ["src", "tests", "vite.config.ts"],
 }

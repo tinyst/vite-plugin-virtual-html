@@ -4,6 +4,7 @@
 .temp/
 __MACOSX/
 node_modules/
+dist_tests/
 
 # file
 .DS_Store
