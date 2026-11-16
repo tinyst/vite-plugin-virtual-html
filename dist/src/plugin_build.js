@@ -20,10 +20,10 @@ export function createBuildPlugin(pluginName, pluginOption) {
             if (!config.build) {
                 config.build = {};
             }
-            if (!config.build.rollupOptions) {
-                config.build.rollupOptions = {};
+            if (!config.build.rolldownOptions) {
+                config.build.rolldownOptions = {};
             }
-            config.build.rollupOptions.input = input;
+            config.build.rolldownOptions.input = input;
         },
         configResolved(config) {
             viteResolvedConfig = config;
@@ -77,7 +77,7 @@ export function createBuildPlugin(pluginName, pluginOption) {
             if (!pluginOption.onTransformHTML) {
                 return;
             }
-            const input = viteResolvedConfig.build.rollupOptions.input;
+            const input = viteResolvedConfig.build.rolldownOptions.input;
             if (!Array.isArray(input)) {
                 // something wrong ?
                 this.error("invalid input configuration");

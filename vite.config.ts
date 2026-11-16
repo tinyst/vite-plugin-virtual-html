@@ -1,6 +1,6 @@
 import { renderToString } from "@tinyst/jsx";
 import { defineConfig } from "vite";
-import { virtualHTML } from "./src/main";
+import { virtualHTML } from "./src/main.js";
 
 export default defineConfig(({ mode }) => ({
   build: {

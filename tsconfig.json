@@ -19,6 +19,7 @@
     "strict": true,
     "target": "ESNext",
     "verbatimModuleSyntax": true,
+    "rootDir": "."
   },
   "include": ["src", "tests", "vite.config.ts"],
 }

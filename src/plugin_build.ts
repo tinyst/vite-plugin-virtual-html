@@ -31,11 +31,11 @@ export function createBuildPlugin(pluginName: string, pluginOption: VirtualHTMLP
         config.build = {};
       }
 
-      if (!config.build.rollupOptions) {
-        config.build.rollupOptions = {};
+      if (!config.build.rolldownOptions) {
+        config.build.rolldownOptions = {};
       }
 
-      config.build.rollupOptions.input = input;
+      config.build.rolldownOptions.input = input;
     },
 
     configResolved(config) {
@@ -100,7 +100,7 @@ export function createBuildPlugin(pluginName: string, pluginOption: VirtualHTMLP
         return;
       }
 
-      const input = viteResolvedConfig.build.rollupOptions.input;
+      const input = viteResolvedConfig.build.rolldownOptions.input;
 
       if (!Array.isArray(input)) {
         // something wrong ?

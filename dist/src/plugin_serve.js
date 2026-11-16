@@ -15,7 +15,8 @@ export function createServePlugin(pluginName, pluginOption) {
             const entryMap = new Map();
             for (const [key, value] of Object.entries(entries)) {
                 const { dir, name } = parse(key);
-                const entryId = relative(cwd, resolve(join(cwd, dir, name + ".html")));
+                // URL paths always use forward slashes, even on Windows
+                const entryId = relative(cwd, resolve(join(cwd, dir, name + ".html"))).replaceAll("\\", "/");
                 const entryPath = resolve(join(cwd, value));
                 entryMap.set(entryId, entryPath);
             }
