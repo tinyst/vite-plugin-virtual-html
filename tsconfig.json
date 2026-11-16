@@ -4,7 +4,9 @@
     "declaration": true,
     "jsx": "react-jsx",
     "jsxImportSource": "@tinyst/jsx",
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "Preserve",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
@@ -15,11 +17,15 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "outDir": "dist",
+    "rootDir": ".",
     "skipLibCheck": true,
     "strict": true,
     "target": "ESNext",
-    "verbatimModuleSyntax": true,
-    "rootDir": "."
+    "verbatimModuleSyntax": true
   },
-  "include": ["src", "tests", "vite.config.ts"],
+  "include": [
+    "src",
+    "tests",
+    "vite.config.ts"
+  ]
 }
